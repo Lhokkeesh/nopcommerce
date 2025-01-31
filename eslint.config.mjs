@@ -24,4 +24,4 @@ export default tseslint.config(
     files: ['*.js', '*.mjs'],
     ...eslint.configs.recommended,
   }
-); 
+);
