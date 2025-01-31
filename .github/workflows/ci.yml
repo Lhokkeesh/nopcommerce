@@ -7,6 +7,7 @@ on:
     branches: [master]
 
 env:
+  # Non-sensitive defaults for CI environment
   NODE_ENV: test
   PORT: 3000
   API_URL: http://localhost:3000
@@ -15,20 +16,16 @@ env:
   HEADLESS: true
 
 jobs:
-  build-and-test:
+  code-quality:
+    name: Code Quality
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [18.x]
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 18.x
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 18.x
           cache: 'npm'
 
       - name: Install dependencies
@@ -40,11 +37,28 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+  tests:
+    name: Tests
+    needs: code-quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests
         env:
+          # Sensitive information from secrets
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_PORT: ${{ secrets.DB_PORT }}
