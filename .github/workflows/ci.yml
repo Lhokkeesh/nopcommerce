@@ -31,11 +31,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Check code formatting
-        run: npx prettier --check .
+      - name: Format code
+        run: npx prettier --write .
 
       - name: Run ESLint
         run: npm run lint
+
+      - name: Check for uncommitted changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "Found uncommitted changes after formatting. Please run 'npm run format' locally and commit the changes."
+            git status --porcelain
+            exit 1
+          fi
 
   tests:
     name: Tests
